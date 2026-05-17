@@ -16,6 +16,12 @@
   const SB_HEADERS = {
     'apikey': SUPABASE_ANON_KEY,
     'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  };
+
+  const SB_UPSERT_HEADERS = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
     'Content-Type': 'application/json',
     'Prefer': 'resolution=merge-duplicates'
   };
@@ -58,16 +64,20 @@
 
   window.saveToSupabase = async function(dataObj) {
     try {
-      // Use PATCH to update existing row
+      // Use POST with upsert (works whether row exists or not)
       const res = await fetch(
-        SUPABASE_URL + '/rest/v1/site_data?key=eq.kashbocks',
+        SUPABASE_URL + '/rest/v1/site_data',
         {
-          method: 'PATCH',
-          headers: SB_HEADERS,
-          body: JSON.stringify({ value: JSON.stringify(dataObj) })
+          method: 'POST',
+          headers: SB_UPSERT_HEADERS,
+          body: JSON.stringify({ key: 'kashbocks', value: JSON.stringify(dataObj) })
         }
       );
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      // 200, 201, 204 sab success hai upsert mein
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error('HTTP ' + res.status + ' — ' + errText);
+      }
       try { localStorage.setItem('kb_data', JSON.stringify(dataObj)); } catch(e) {}
       setStatus('🌐 live — sabko dikhra hai', '#6aaa6a');
     } catch(e) {
