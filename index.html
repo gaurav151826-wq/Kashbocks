@@ -54,6 +54,8 @@
       if (!window.D.platforms|| !window.D.platforms.length) window.D.platforms = window.DEFAULTS.platforms;
       if (!window.D.colors)   window.D.colors   = window.DEFAULTS.colors;
       if (!window.D.sections) window.D.sections = window.DEFAULTS.sections;
+      // Sync localStorage so all devices stay updated
+      try { localStorage.setItem('kb_data', JSON.stringify(window.D)); } catch(e) {}
       if (typeof window.render === 'function') window.render();
       setStatus('🌐 live — sabko dikhra hai', '#6aaa6a');
     } catch(e) {
