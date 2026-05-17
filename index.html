@@ -57,7 +57,7 @@
       // Sync localStorage so all devices stay updated
       try { localStorage.setItem('kb_data', JSON.stringify(window.D)); } catch(e) {}
       if (typeof window.render === 'function') window.render();
-      setStatus('🌐 live — sabko dikhra hai', '#6aaa6a');
+      setStatus('🌐 live —', '#6aaa6a');
     } catch(e) {
       console.warn('Supabase load error:', e);
       setStatus('⚠ offline (local only)', '#C4887A');
@@ -81,7 +81,7 @@
         throw new Error('HTTP ' + res.status + ' — ' + errText);
       }
       try { localStorage.setItem('kb_data', JSON.stringify(dataObj)); } catch(e) {}
-      setStatus('🌐 live — sabko dikhra hai', '#6aaa6a');
+      setStatus('🌐 live — ', '#6aaa6a');
     } catch(e) {
       console.warn('Supabase save error:', e);
       try { localStorage.setItem('kb_data', JSON.stringify(dataObj)); } catch(ex) {}
