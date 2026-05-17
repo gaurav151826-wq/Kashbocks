@@ -33,13 +33,17 @@
         SUPABASE_URL + '/rest/v1/site_data?key=eq.kashbocks&select=value',
         { headers: SB_HEADERS }
       );
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = await res.json();
       if (!rows || rows.length === 0) {
-        setStatus('⚠ table empty — save something first', '#C4887A');
+        setStatus('⚠ pehli baar save karo admin se', '#C4887A');
         return;
       }
-      const parsed = typeof rows[0].value === 'string' ? JSON.parse(rows[0].value) : rows[0].value;
-      window.D = Object.assign({}, window.DEFAULTS, parsed);
+      const raw = rows[0].value;
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      // Merge with DEFAULTS safely
+      const base = JSON.parse(JSON.stringify(window.DEFAULTS));
+      window.D = Object.assign(base, parsed);
       if (!window.D.songs    || !window.D.songs.length)     window.D.songs     = window.SONGS;
       if (!window.D.platforms|| !window.D.platforms.length) window.D.platforms = window.DEFAULTS.platforms;
       if (!window.D.colors)   window.D.colors   = window.DEFAULTS.colors;
@@ -54,12 +58,13 @@
 
   window.saveToSupabase = async function(dataObj) {
     try {
+      // Use PATCH to update existing row
       const res = await fetch(
-        SUPABASE_URL + '/rest/v1/site_data',
+        SUPABASE_URL + '/rest/v1/site_data?key=eq.kashbocks',
         {
-          method: 'POST',
+          method: 'PATCH',
           headers: SB_HEADERS,
-          body: JSON.stringify({ key: 'kashbocks', value: JSON.stringify(dataObj) })
+          body: JSON.stringify({ value: JSON.stringify(dataObj) })
         }
       );
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1165,10 +1170,6 @@ function load() {
   window.DEFAULTS = DEFAULTS;
   window.SONGS = SONGS;
   window.render = render;
-  // Then load from Supabase (overrides local if cloud data exists)
-  if (window._sbReady && window.loadFromSupabase) {
-    window.loadFromSupabase();
-  }
 }
 
 function save() {
@@ -1730,6 +1731,10 @@ function closeAdminPanel() { toggleAdmin(); }
 // ── INIT ──────────────────────────────────────────────────────────────────────
 load();
 render();
+// Load from Supabase AFTER first render — overrides local data with cloud data
+if (window._sbReady && window.loadFromSupabase) {
+  window.loadFromSupabase();
+}
 </script>
 </body>
 </html>
